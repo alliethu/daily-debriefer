@@ -13,18 +13,13 @@ function getWeekStart() {
   return mon.toISOString().split('T')[0]
 }
 
-function today() {
-  return new Date().toISOString().split('T')[0]
-}
+function today() { return new Date().toISOString().split('T')[0] }
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-
   const { data: entries } = await supabase
-    .from('entries')
-    .select('*, relationship_pulses(*), entry_themes(*)')
-    .order('date', { ascending: false })
-    .limit(50)
+    .from('entries').select('*, relationship_pulses(*), entry_themes(*)')
+    .order('date', { ascending: false }).limit(50)
 
   const all = (entries ?? []) as (Entry & {
     relationship_pulses?: { person_name: string; sentiment: string }[]
@@ -37,61 +32,52 @@ export default async function DashboardPage() {
   const avgEnergy = thisWeek.length
     ? Math.round((thisWeek.reduce((s, e) => s + e.energy_level, 0) / thisWeek.length) * 10) / 10
     : null
-
   const hasEntryToday = all.some(e => e.date === today())
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold">Journal</h1>
-          <p className="text-sm text-neutral-500">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
+      <div>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--n-text)' }}>
+              📋 Journal
+            </h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--n-text3)' }}>
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+          {!hasEntryToday && (
+            <Link href="/entry/new"
+              className="rounded text-sm font-medium flex-shrink-0"
+              style={{ background: 'var(--n-blue)', color: '#fff', padding: '6px 12px' }}>
+              + New entry
+            </Link>
+          )}
         </div>
-        {!hasEntryToday && (
-          <Link
-            href="/entry/new"
-            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-colors"
-          >
-            + Today's entry
-          </Link>
+        {thisWeek.length > 0 && (
+          <div className="mt-4 flex items-center gap-4 text-sm" style={{ color: 'var(--n-text3)' }}>
+            <span><span style={{ color: 'var(--n-text2)' }}>{thisWeek.length}</span> this week</span>
+            <span>·</span>
+            <span><span style={{ color: 'var(--n-text2)' }}>{quickWinsThisWeek}</span> wins</span>
+            <span>·</span>
+            <span>energy <span style={{ color: 'var(--n-text2)' }}>{avgEnergy ?? '—'}</span>/5</span>
+          </div>
         )}
       </div>
 
-      {/* This week stats */}
-      {thisWeek.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-neutral-800/60 bg-neutral-950 px-4 py-4 space-y-1">
-            <p className="text-2xl font-semibold tabular-nums">{thisWeek.length}</p>
-            <p className="text-xs text-neutral-500">entries this week</p>
-          </div>
-          <div className="rounded-xl border border-neutral-800/60 bg-neutral-950 px-4 py-4 space-y-1">
-            <p className="text-2xl font-semibold tabular-nums">{quickWinsThisWeek}</p>
-            <p className="text-xs text-neutral-500">quick wins</p>
-          </div>
-          <div className="rounded-xl border border-neutral-800/60 bg-neutral-950 px-4 py-4 space-y-1">
-            <p className="text-2xl font-semibold tabular-nums">{avgEnergy ?? '—'}</p>
-            <p className="text-xs text-neutral-500">avg energy</p>
-          </div>
-        </div>
-      )}
+      <div style={{ borderTop: '1px solid var(--n-border)' }} />
 
-      {/* Entry list */}
-      <div className="space-y-3">
+      <div>
         {all.length === 0 ? (
-          <div className="rounded-xl border border-neutral-800/40 border-dashed p-10 text-center space-y-3">
-            <p className="text-neutral-500 text-sm">No entries yet.</p>
-            <Link
-              href="/entry/new"
-              className="inline-block rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-colors"
-            >
-              Write your first debrief
+          <div className="py-16 text-center space-y-4">
+            <p className="text-sm" style={{ color: 'var(--n-text3)' }}>No entries yet. Start your first debrief.</p>
+            <Link href="/entry/new" className="inline-block rounded text-sm font-medium"
+              style={{ background: 'var(--n-blue)', color: '#fff', padding: '7px 14px' }}>
+              Write today's entry
             </Link>
           </div>
         ) : (
-          all.map(entry => <EntryCard key={entry.id} entry={entry} />)
+          <div>{all.map(entry => <EntryCard key={entry.id} entry={entry} />)}</div>
         )}
       </div>
     </div>

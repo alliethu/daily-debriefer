@@ -23,75 +23,55 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(error.message)
-      } else {
-        router.push('/dashboard')
-        router.refresh()
-      }
+      if (error) { setError(error.message) } else { router.push('/dashboard'); router.refresh() }
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
-      if (error) {
-        setError(error.message)
-      } else {
-        setMessage('Check your email for a confirmation link.')
-      }
+      if (error) { setError(error.message) } else { setMessage('Check your email for a confirmation link.') }
     }
-
     setLoading(false)
   }
 
+  const inputStyle = {
+    width: '100%',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid var(--n-border)',
+    borderRadius: '4px',
+    padding: '7px 10px',
+    fontSize: '14px',
+    color: 'var(--n-text)',
+    outline: 'none',
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label className="block text-sm text-neutral-400" htmlFor="email">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-3 text-sm text-neutral-100 placeholder-neutral-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-          placeholder="you@example.com"
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="space-y-1">
+        <label htmlFor="email" className="block text-xs" style={{ color: 'var(--n-text3)' }}>Email</label>
+        <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
+          required autoComplete="email" placeholder="you@example.com" style={inputStyle}
+          onFocus={e => { e.target.style.borderColor = 'var(--n-blue)'; e.target.style.boxShadow = '0 0 0 2px rgba(26,111,196,0.15)' }}
+          onBlur={e => { e.target.style.borderColor = 'var(--n-border)'; e.target.style.boxShadow = 'none' }}
+        />
+      </div>
+      <div className="space-y-1">
+        <label htmlFor="password" className="block text-xs" style={{ color: 'var(--n-text3)' }}>Password</label>
+        <input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
+          required autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+          placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'} style={inputStyle}
+          onFocus={e => { e.target.style.borderColor = 'var(--n-blue)'; e.target.style.boxShadow = '0 0 0 2px rgba(26,111,196,0.15)' }}
+          onBlur={e => { e.target.style.borderColor = 'var(--n-border)'; e.target.style.boxShadow = 'none' }}
         />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm text-neutral-400" htmlFor="password">
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-          className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-4 py-3 text-sm text-neutral-100 placeholder-neutral-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-          placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
-        />
-      </div>
+      {error && <p role="alert" className="text-xs rounded px-3 py-2" style={{ color: '#c62828', background: 'rgba(198,40,40,0.08)', border: '1px solid rgba(198,40,40,0.2)' }}>{error}</p>}
+      {message && <p role="status" className="text-xs rounded px-3 py-2" style={{ color: '#2e7d32', background: 'rgba(46,125,50,0.08)', border: '1px solid rgba(46,125,50,0.2)' }}>{message}</p>}
 
-      {error && (
-        <p className="text-sm text-red-400 bg-red-950/40 border border-red-900/50 rounded-lg px-4 py-3">
-          {error}
-        </p>
-      )}
-      {message && (
-        <p className="text-sm text-emerald-400 bg-emerald-950/40 border border-emerald-900/50 rounded-lg px-4 py-3">
-          {message}
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-medium text-white transition-colors"
+      <button type="submit" disabled={loading}
+        className="w-full rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ background: 'var(--n-blue)', color: '#fff', padding: '8px 12px' }}
+        onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = 'var(--n-blue-h)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-blue)' }}
       >
-        {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+        {loading ? 'Please wait…' : mode === 'login' ? 'Continue' : 'Create account'}
       </button>
     </form>
   )

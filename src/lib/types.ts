@@ -36,7 +36,6 @@ export interface EntryFormData {
   date: string
   what_i_did: string
   impact: string
-  is_quick_win: boolean
   energy_level: number
   whats_unresolved: string
   pulses: { person_name: string; sentiment: Sentiment }[]

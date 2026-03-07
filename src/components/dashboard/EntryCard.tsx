@@ -1,13 +1,15 @@
+'use client'
+
 import Link from 'next/link'
 import { type Entry } from '@/lib/types'
 
 const sentimentDot: Record<string, string> = {
-  positive: 'bg-emerald-400',
-  neutral: 'bg-neutral-500',
-  tense: 'bg-amber-400',
+  positive: '#4caf50',
+  neutral:  '#9b9b9b',
+  tense:    '#ff9800',
 }
 
-const energyBar = ['', '▁', '▂', '▄', '▆', '█']
+const energyEmoji = ['', '😔', '😐', '🙂', '😊', '⚡']
 
 interface Props {
   entry: Entry & {
@@ -18,74 +20,53 @@ interface Props {
 
 export default function EntryCard({ entry }: Props) {
   const date = new Date(entry.date + 'T12:00:00')
-  const formatted = date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
+  const formatted = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 
   return (
-    <Link
-      href={`/entry/${entry.id}`}
-      className="block rounded-xl border border-neutral-800/60 bg-neutral-950 hover:border-neutral-700 hover:bg-neutral-900/30 transition-all p-5 group"
+    <Link href={`/entry/${entry.id}`} className="group block py-2.5 px-2 rounded transition-colors"
+      style={{ color: 'inherit', textDecoration: 'none' }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'var(--n-hover)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-neutral-500">{formatted}</span>
+      <div className="flex items-start gap-3">
+        <span className="text-base mt-0.5 flex-shrink-0">📝</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium" style={{ color: 'var(--n-text)' }}>
+              {formatted}
+            </span>
             {entry.is_quick_win && (
-              <span className="text-xs text-indigo-400 bg-indigo-950/60 border border-indigo-900/50 rounded-full px-2 py-0.5">
-                win
+              <span className="text-xs rounded-sm px-1.5 py-0.5 font-medium"
+                style={{ background: 'rgba(26,111,196,0.15)', color: 'var(--n-blue)' }}>
+                ⚡ win
               </span>
             )}
+            {entry.entry_themes?.slice(0, 3).map((t, i) => (
+              <span key={i} className="text-xs rounded-sm px-1.5 py-0.5"
+                style={{ background: 'var(--n-active)', color: 'var(--n-text3)' }}>
+                {t.theme}
+              </span>
+            ))}
           </div>
-
-          <p className="text-sm text-neutral-300 leading-relaxed line-clamp-2">
-            {entry.what_i_did || <span className="text-neutral-600 italic">No content</span>}
+          <p className="text-sm mt-0.5 line-clamp-1" style={{ color: 'var(--n-text2)' }}>
+            {entry.what_i_did || <span style={{ color: 'var(--n-text3)', fontStyle: 'italic' }}>No content</span>}
           </p>
-
-          {entry.impact && (
-            <p className="text-xs text-neutral-500 line-clamp-1">
-              ↳ {entry.impact}
-            </p>
+          {(entry.relationship_pulses?.length || 0) > 0 && (
+            <div className="flex items-center gap-1.5 mt-1">
+              {entry.relationship_pulses!.map((p, i) => (
+                <span key={i} className="flex items-center gap-1 text-xs" style={{ color: 'var(--n-text3)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0"
+                    style={{ background: sentimentDot[p.sentiment] ?? '#9b9b9b' }} />
+                  {p.person_name}
+                </span>
+              ))}
+            </div>
           )}
-
-          <div className="flex items-center gap-3 pt-1">
-            {/* Energy */}
-            <span className="text-xs text-neutral-600">
-              Energy <span className="text-indigo-400">{energyBar[entry.energy_level]}</span>
-            </span>
-
-            {/* Pulses */}
-            {entry.relationship_pulses && entry.relationship_pulses.length > 0 && (
-              <div className="flex items-center gap-1">
-                {entry.relationship_pulses.map((p, i) => (
-                  <span
-                    key={i}
-                    className={`w-1.5 h-1.5 rounded-full ${sentimentDot[p.sentiment] ?? 'bg-neutral-500'}`}
-                    title={`${p.person_name} — ${p.sentiment}`}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Themes */}
-            {entry.entry_themes && entry.entry_themes.length > 0 && (
-              <div className="flex items-center gap-1 flex-wrap">
-                {entry.entry_themes.slice(0, 3).map((t, i) => (
-                  <span key={i} className="text-xs text-neutral-600">
-                    {i > 0 && '·'} {t.theme}
-                  </span>
-                ))}
-                {entry.entry_themes.length > 3 && (
-                  <span className="text-xs text-neutral-700">+{entry.entry_themes.length - 3}</span>
-                )}
-              </div>
-            )}
-          </div>
         </div>
-
-        <span className="text-neutral-700 group-hover:text-neutral-500 transition-colors text-sm flex-shrink-0">→</span>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          <span className="text-sm" title={`Energy ${entry.energy_level}/5`}>{energyEmoji[entry.energy_level]}</span>
+          <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--n-text3)' }}>→</span>
+        </div>
       </div>
     </Link>
   )

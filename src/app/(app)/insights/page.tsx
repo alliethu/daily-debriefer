@@ -6,48 +6,41 @@ import PrepOneOnOneForm from '@/components/insights/PrepOneOnOneForm'
 export default function InsightsPage() {
   return (
     <div className="space-y-8">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold">Insights</h1>
-        <p className="text-sm text-neutral-500">AI-powered synthesis of your journal.</p>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--n-text)' }}>✨ Insights</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--n-text3)' }}>AI-powered synthesis of your journal.</p>
       </div>
 
-      <div className="space-y-4">
-        {/* Weekly synthesis */}
+      <div style={{ borderTop: '1px solid var(--n-border)' }} />
+
+      <div className="space-y-3">
         <AIOutput
           title="End-of-week synthesis"
-          description="Analyze this week's entries — wins, patterns, tensions, what to carry forward."
-          icon="◇"
-          streamConfig={{
-            url: '/api/ai/weekly-synthesis',
-            body: { weekOffset: 0 },
-          }}
+          description="Wins, patterns, tensions, and what to carry forward from this week."
+          icon="📅"
+          streamConfig={{ url: '/api/ai/weekly-synthesis', body: { weekOffset: 0 } }}
         />
 
-        {/* 1:1 prep */}
-        <div className="rounded-xl border border-neutral-800/60 bg-neutral-950 overflow-hidden">
-          <div className="px-5 py-5 border-b border-neutral-900 space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-base">◈</span>
-              <h2 className="text-sm font-medium text-neutral-200">Prep my 1:1</h2>
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--n-border)' }}>
+          <div className="px-4 py-4" style={{ borderBottom: '1px solid var(--n-border)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <span>🤝</span>
+              <h2 className="text-sm font-medium" style={{ color: 'var(--n-text)' }}>Prep my 1:1</h2>
             </div>
-            <p className="text-xs text-neutral-500">
-              Pull entries mentioning a person and generate talking points.
+            <p className="text-xs" style={{ color: 'var(--n-text3)' }}>
+              Pull journal entries mentioning a person and generate talking points.
             </p>
           </div>
-          <div className="px-5 py-4">
+          <div className="px-4 py-4">
             <PrepOneOnOneForm />
           </div>
         </div>
 
-        {/* Quarterly reflection */}
         <AIOutput
           title="Quarterly reflection"
-          description="Turn the last 90 days of entries into a structured leadership narrative."
-          icon="◉"
-          streamConfig={{
-            url: '/api/ai/quarterly-reflection',
-            body: {},
-          }}
+          description="Turn the last 90 days into a structured leadership narrative."
+          icon="📊"
+          streamConfig={{ url: '/api/ai/quarterly-reflection', body: {} }}
         />
       </div>
     </div>

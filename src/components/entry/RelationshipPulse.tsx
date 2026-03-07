@@ -3,20 +3,13 @@
 import { useState } from 'react'
 import { type Sentiment } from '@/lib/types'
 
-interface Pulse {
-  person_name: string
-  sentiment: Sentiment
-}
+interface Pulse { person_name: string; sentiment: Sentiment }
+interface Props { pulses: Pulse[]; onChange: (pulses: Pulse[]) => void }
 
-interface Props {
-  pulses: Pulse[]
-  onChange: (pulses: Pulse[]) => void
-}
-
-const sentimentConfig: Record<Sentiment, { label: string; color: string }> = {
-  positive: { label: 'Positive', color: 'text-emerald-400 bg-emerald-950/60 border-emerald-900' },
-  neutral:  { label: 'Neutral',  color: 'text-neutral-400 bg-neutral-900 border-neutral-800' },
-  tense:    { label: 'Tense',    color: 'text-amber-400 bg-amber-950/60 border-amber-900' },
+const sentimentConfig: Record<Sentiment, { label: string; dot: string }> = {
+  positive: { label: 'Positive', dot: '#4caf50' },
+  neutral:  { label: 'Neutral',  dot: '#9b9b9b' },
+  tense:    { label: 'Tense',    dot: '#ff9800' },
 }
 
 export default function RelationshipPulse({ pulses, onChange }: Props) {
@@ -31,45 +24,40 @@ export default function RelationshipPulse({ pulses, onChange }: Props) {
     setSentiment('positive')
   }
 
-  function remove(index: number) {
-    onChange(pulses.filter((_, i) => i !== index))
-  }
+  function remove(index: number) { onChange(pulses.filter((_, i) => i !== index)) }
+  function handleKey(e: React.KeyboardEvent) { if (e.key === 'Enter') { e.preventDefault(); add() } }
 
-  function handleKey(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      add()
-    }
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid var(--n-border)',
+    borderRadius: '4px',
+    padding: '6px 10px',
+    fontSize: '14px',
+    color: 'var(--n-text)',
+    outline: 'none',
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {pulses.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {pulses.map((p, i) => {
-            const cfg = sentimentConfig[p.sentiment]
-            return (
-              <div
-                key={i}
-                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${cfg.color}`}
-              >
-                <span className="font-medium">{p.person_name}</span>
-                <span className="opacity-60">·</span>
-                <span>{cfg.label}</span>
-                <button
-                  type="button"
-                  onClick={() => remove(i)}
-                  className="ml-1 opacity-50 hover:opacity-100 transition-opacity"
-                  aria-label="Remove"
-                >
-                  ×
-                </button>
-              </div>
-            )
-          })}
+        <div className="flex flex-wrap gap-1.5">
+          {pulses.map((p, i) => (
+            <div key={i} className="flex items-center gap-1.5 rounded-sm px-2 py-1 text-xs"
+              style={{ background: 'var(--n-active)', color: 'var(--n-text2)', border: '1px solid var(--n-border)' }}>
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sentimentConfig[p.sentiment].dot }} />
+              <span>{p.person_name}</span>
+              <span style={{ color: 'var(--n-text3)' }}>·</span>
+              <span style={{ color: 'var(--n-text3)' }}>{sentimentConfig[p.sentiment].label}</span>
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                aria-label={`Remove ${p.person_name}`}
+                className="ml-0.5 transition-opacity opacity-50 hover:opacity-100"
+              >×</button>
+            </div>
+          ))}
         </div>
       )}
-
       <div className="flex gap-2">
         <input
           type="text"
@@ -77,12 +65,18 @@ export default function RelationshipPulse({ pulses, onChange }: Props) {
           onChange={e => setName(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Name…"
-          className="flex-1 min-w-0 rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+          aria-label="Person's name"
+          style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+          onFocus={e => { e.target.style.borderColor = 'var(--n-blue)' }}
+          onBlur={e => { e.target.style.borderColor = 'var(--n-border)' }}
         />
         <select
           value={sentiment}
           onChange={e => setSentiment(e.target.value as Sentiment)}
-          className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 text-sm text-neutral-300 focus:border-indigo-500 transition-colors"
+          aria-label="Sentiment"
+          style={{ ...inputStyle }}
+          onFocus={e => { e.target.style.borderColor = 'var(--n-blue)' }}
+          onBlur={e => { e.target.style.borderColor = 'var(--n-border)' }}
         >
           {(Object.keys(sentimentConfig) as Sentiment[]).map(s => (
             <option key={s} value={s}>{sentimentConfig[s].label}</option>
@@ -92,10 +86,12 @@ export default function RelationshipPulse({ pulses, onChange }: Props) {
           type="button"
           onClick={add}
           disabled={!name.trim()}
-          className="rounded-lg bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 px-3 py-2 text-sm text-neutral-300 transition-colors"
-        >
-          Add
-        </button>
+          aria-label="Add person"
+          className="rounded text-sm transition-colors disabled:opacity-30"
+          style={{ background: 'var(--n-active)', color: 'var(--n-text2)', border: '1px solid var(--n-border)', padding: '6px 12px' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--n-text)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-active)'; (e.currentTarget as HTMLElement).style.color = 'var(--n-text2)' }}
+        >Add</button>
       </div>
     </div>
   )

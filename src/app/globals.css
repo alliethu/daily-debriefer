@@ -1,52 +1,75 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --n-bg:      #ffffff;
+  --n-sidebar: #f7f7f5;
+  --n-hover:   rgba(0, 0, 0, 0.04);
+  --n-active:  rgba(0, 0, 0, 0.07);
+  --n-text:    #1a1a1a;
+  --n-text2:   #4a4a4a;
+  --n-text3:   #6b6b6b;  /* 5.3:1 on white — WCAG AA */
+  --n-border:  rgba(0, 0, 0, 0.09);
+  --n-blue:    #1a6fc4;  /* white text: 4.9:1 — WCAG AA */
+  --n-blue-h:  #155fa8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--n-bg);
+  --color-foreground: var(--n-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background: var(--n-bg);
+  color: var(--n-text);
+  font-family: var(--font-geist-sans), ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
-/* Custom scrollbar */
+/* WCAG AA: Keyboard focus indicators */
+:focus-visible {
+  outline: 2px solid var(--n-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 
-/* Slider thumb */
+/* Notion-style range slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
   cursor: pointer;
+  width: 100%;
 }
 input[type="range"]::-webkit-slider-runnable-track {
-  background: #262626;
-  height: 4px;
+  background: rgba(0,0,0,0.12);
+  height: 3px;
   border-radius: 2px;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #818cf8;
-  margin-top: -7px;
-  transition: background 0.15s;
+  background: var(--n-blue);
+  margin-top: -5.5px;
+  transition: background 0.1s;
 }
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: #a5b4fc;
+  background: var(--n-blue-h);
+}
+
+/* Notion-style date input */
+input[type="date"] {
+  color-scheme: light;
 }

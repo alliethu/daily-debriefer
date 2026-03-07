@@ -5,9 +5,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const links = [
-  { href: '/dashboard', label: 'Journal', icon: '◈' },
-  { href: '/entry/new', label: 'New entry', icon: '+' },
-  { href: '/insights', label: 'Insights', icon: '◇' },
+  { href: '/dashboard', label: 'Journal',  icon: '📋' },
+  { href: '/entry/new', label: 'New entry', icon: '✏️' },
+  { href: '/insights',  label: 'Insights',  icon: '✨' },
 ]
 
 export default function Nav() {
@@ -24,68 +24,67 @@ export default function Nav() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-52 bg-neutral-950 border-r border-neutral-900 py-8 px-4 z-10">
-        <div className="mb-8 px-2">
-          <span className="text-indigo-400 text-lg">◆</span>
-          <span className="ml-2 text-sm font-medium text-neutral-300">Daily Debriefer</span>
+      <aside
+        className="hidden md:flex flex-col fixed left-0 top-0 h-full w-60 py-3 z-10"
+        style={{ background: 'var(--n-sidebar)', borderRight: '1px solid var(--n-border)' }}
+      >
+        <div className="px-3 mb-2">
+          <div className="flex items-center gap-2 rounded px-2 py-1.5" style={{ color: 'var(--n-text)' }}>
+            <div className="w-5 h-5 rounded text-xs flex items-center justify-center font-bold flex-shrink-0"
+              style={{ background: 'var(--n-blue)', color: '#fff' }}>D</div>
+            <span className="text-sm font-medium truncate">Daily Debriefer</span>
+          </div>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 px-2 space-y-px">
           {links.map(link => {
             const active = link.href === '/entry/new'
               ? pathname === '/entry/new'
               : pathname.startsWith(link.href)
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                  active
-                    ? 'bg-neutral-900 text-neutral-100'
-                    : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/50'
-                }`}
+              <Link key={link.href} href={link.href}
+                className="flex items-center gap-2 rounded px-2 py-[5px] text-sm transition-colors"
+                style={{ color: active ? 'var(--n-text)' : 'var(--n-text2)', background: active ? 'var(--n-active)' : 'transparent' }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--n-hover)' }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
               >
-                <span className="text-base leading-none">{link.icon}</span>
-                {link.label}
+                <span className="text-base w-5 text-center leading-none">{link.icon}</span>
+                <span>{link.label}</span>
               </Link>
             )
           })}
         </nav>
 
-        <button
-          onClick={signOut}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-neutral-600 hover:text-neutral-400 transition-colors w-full"
-        >
-          <span>↩</span>
-          Sign out
-        </button>
+        <div className="px-2 pt-2" style={{ borderTop: '1px solid var(--n-border)' }}>
+          <button onClick={signOut}
+            className="flex items-center gap-2 rounded px-2 py-[5px] text-sm w-full transition-colors"
+            style={{ color: 'var(--n-text3)' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--n-text2)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--n-text3)' }}
+          >
+            <span className="text-base w-5 text-center leading-none">↩</span>
+            <span>Sign out</span>
+          </button>
+        </div>
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-neutral-900 flex z-10">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex z-10"
+        style={{ background: 'var(--n-sidebar)', borderTop: '1px solid var(--n-border)' }}>
         {links.map(link => {
-          const active = link.href === '/entry/new'
-            ? pathname === '/entry/new'
-            : pathname.startsWith(link.href)
+          const active = link.href === '/entry/new' ? pathname === '/entry/new' : pathname.startsWith(link.href)
           return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors ${
-                active ? 'text-indigo-400' : 'text-neutral-600 hover:text-neutral-400'
-              }`}
-            >
+            <Link key={link.href} href={link.href}
+              className="flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs transition-colors"
+              style={{ color: active ? 'var(--n-blue)' : 'var(--n-text3)' }}>
               <span className="text-base">{link.icon}</span>
-              {link.label}
+              <span>{link.label}</span>
             </Link>
           )
         })}
-        <button
-          onClick={signOut}
-          className="flex-1 flex flex-col items-center gap-1 py-3 text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
-        >
+        <button onClick={signOut} className="flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs" style={{ color: 'var(--n-text3)' }}>
           <span className="text-base">↩</span>
-          Out
+          <span>Out</span>
         </button>
       </nav>
     </>

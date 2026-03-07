@@ -13,34 +13,28 @@ export default function PrepOneOnOneForm() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={personName}
-          onChange={e => setPersonName(e.target.value)}
+        <input type="text" value={personName} onChange={e => setPersonName(e.target.value)}
           placeholder="Person's name…"
-          className="flex-1 min-w-0 rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2.5 text-sm text-neutral-100 placeholder-neutral-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+          className="flex-1 min-w-0 rounded text-sm"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--n-border)', padding: '6px 10px', color: 'var(--n-text)', outline: 'none' }}
+          onFocus={e => e.target.style.borderColor = 'var(--n-blue)'}
+          onBlur={e => e.target.style.borderColor = 'var(--n-border)'}
         />
-        <button
-          type="submit"
-          disabled={!personName.trim()}
-          className="rounded-lg bg-neutral-800 hover:bg-neutral-700 disabled:opacity-30 px-3 py-2.5 text-sm text-neutral-300 transition-colors"
-        >
-          Set
-        </button>
+        <button type="submit" disabled={!personName.trim()}
+          className="rounded text-sm transition-colors disabled:opacity-30"
+          style={{ background: 'var(--n-active)', color: 'var(--n-text2)', border: '1px solid var(--n-border)', padding: '6px 12px' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-hover)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-active)' }}
+        >Look up</button>
       </form>
-
       {submitted && (
-        <AIOutput
-          key={submitted}
+        <AIOutput key={submitted}
           title={`Prep 1:1 — ${submitted}`}
-          description={`Pulling entries and generating talking points for your next conversation with ${submitted}.`}
-          icon="◈"
-          streamConfig={{
-            url: '/api/ai/prep-one-on-one',
-            body: { personName: submitted },
-          }}
+          description={`Talking points for your next conversation with ${submitted}.`}
+          icon="🤝"
+          streamConfig={{ url: '/api/ai/prep-one-on-one', body: { personName: submitted } }}
         />
       )}
     </div>

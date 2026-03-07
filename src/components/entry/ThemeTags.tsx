@@ -17,19 +17,20 @@ export default function ThemeTags({ selected, onChange }: Props) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {THEME_OPTIONS.map(theme => {
         const active = selected.includes(theme)
         return (
-          <button
-            key={theme}
-            type="button"
-            onClick={() => toggle(theme)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              active
-                ? 'bg-indigo-600 text-white'
-                : 'bg-neutral-900 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 border border-neutral-800'
-            }`}
+          <button key={theme} type="button" onClick={() => toggle(theme)}
+            aria-pressed={active}
+            className="rounded-sm px-2 py-1 text-xs transition-colors"
+            style={{
+              background: active ? 'rgba(26,111,196,0.15)' : 'var(--n-active)',
+              color: active ? 'var(--n-blue)' : 'var(--n-text2)',
+              border: active ? '1px solid rgba(26,111,196,0.3)' : '1px solid transparent',
+            }}
+            onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'var(--n-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--n-text)' } }}
+            onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = 'var(--n-active)'; (e.currentTarget as HTMLElement).style.color = 'var(--n-text2)' } }}
           >
             {theme}
           </button>
