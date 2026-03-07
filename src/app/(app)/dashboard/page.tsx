@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import EntryCard from '@/components/dashboard/EntryCard'
+import GettingStartedChecklist from '@/components/dashboard/GettingStartedChecklist'
 import { type Entry } from '@/lib/types'
 
 function getWeekStart() {
@@ -34,8 +35,19 @@ export default async function DashboardPage() {
     : null
   const hasEntryToday = all.some(e => e.date === today())
 
+  const hasEntry      = all.length > 0
+  const hasTheme      = all.some(e => (e.entry_themes ?? []).length > 0)
+  const hasPulse      = all.some(e => (e.relationship_pulses ?? []).length > 0)
+  const hasAttachment = all.some(e => !!e.attachment_summary)
+
   return (
     <div className="space-y-8">
+      <GettingStartedChecklist
+        hasEntry={hasEntry}
+        hasTheme={hasTheme}
+        hasPulse={hasPulse}
+        hasAttachment={hasAttachment}
+      />
       <div>
         <div className="flex items-start justify-between gap-4">
           <div>

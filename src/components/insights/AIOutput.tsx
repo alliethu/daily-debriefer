@@ -62,6 +62,7 @@ export default function AIOutput({ title, description, icon, streamConfig, child
     if (loading) { abortRef.current?.abort(); setLoading(false); return }
     setOutput(''); setError(null); setLoading(true); setSaveState('idle')
     abortRef.current = new AbortController()
+    let received = ''
     try {
       const res = await fetch(streamConfig.url, {
         method: 'POST',
@@ -78,11 +79,16 @@ export default function AIOutput({ title, description, icon, streamConfig, child
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        setOutput(prev => prev + decoder.decode(value, { stream: true }))
+        const chunk = decoder.decode(value, { stream: true })
+        received += chunk
+        setOutput(prev => prev + chunk)
       }
     } catch (e: unknown) {
       if ((e as Error).name !== 'AbortError') setError('Request failed. Check your API key and try again.')
-    } finally { setLoading(false) }
+    } finally {
+      setLoading(false)
+      if (received) localStorage.setItem('dd:onboarding:insight', '1')
+    }
   }
 
   async function save() {
