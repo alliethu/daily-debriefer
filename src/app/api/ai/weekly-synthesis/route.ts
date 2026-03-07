@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const { weekOffset = 0 } = await req.json().catch(() => ({}))
   const { start, end } = getWeekBounds(weekOffset)
 
-  const { data: entries } = await supabase
+  let { data: entries } = await supabase
     .from('entries')
     .select('*, relationship_pulses(*), entry_themes(*)')
     .eq('user_id', user.id)
@@ -35,11 +35,21 @@ export async function POST(req: NextRequest) {
     .lte('date', end)
     .order('date')
 
+  // If no entries this week, fall back to the most recent 7 entries
   if (!entries || entries.length === 0) {
-    return new Response(
-      JSON.stringify({ error: 'No entries found for this week.' }),
-      { status: 404, headers: { 'Content-Type': 'application/json' } }
-    )
+    const { data: recent } = await supabase
+      .from('entries')
+      .select('*, relationship_pulses(*), entry_themes(*)')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
+      .limit(7)
+    if (!recent || recent.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No entries yet. Write a few journal entries first, then come back for your synthesis.' }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+    entries = recent.reverse()
   }
 
   const entriesText = entries.map(e => {
