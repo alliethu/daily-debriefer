@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ThemeTags from './ThemeTags'
 import RelationshipPulse from './RelationshipPulse'
+import FileAttachment from './FileAttachment'
 import { type EntryFormData, type Sentiment } from '@/lib/types'
 
 const energyLabels = ['', 'Drained', 'Low', 'Steady', 'Good', 'Energised']
@@ -48,6 +49,7 @@ export default function EntryForm({ initialData, entryId }: Props) {
     impact: initialData?.impact ?? '',
     energy_level: initialData?.energy_level ?? 3,
     whats_unresolved: initialData?.whats_unresolved ?? '',
+    attachment_summary: initialData?.attachment_summary ?? '',
     pulses: initialData?.pulses ?? [],
     themes: initialData?.themes ?? [],
   })
@@ -73,6 +75,7 @@ export default function EntryForm({ initialData, entryId }: Props) {
       const { error: err } = await supabase.from('entries').update({
         what_i_did: form.what_i_did, impact: form.impact,
         energy_level: form.energy_level, whats_unresolved: form.whats_unresolved,
+        attachment_summary: form.attachment_summary,
       }).eq('id', entryId)
       if (err) { setError(err.message); setSaving(false); return }
     } else {
@@ -80,6 +83,7 @@ export default function EntryForm({ initialData, entryId }: Props) {
         user_id: user.id, date: form.date, what_i_did: form.what_i_did,
         impact: form.impact, energy_level: form.energy_level,
         whats_unresolved: form.whats_unresolved,
+        attachment_summary: form.attachment_summary,
       }).select('id').single()
       if (err) { setError(err.message); setSaving(false); return }
       entry_id = data.id
@@ -134,9 +138,15 @@ export default function EntryForm({ initialData, entryId }: Props) {
           </div>
         </Prop>
 
-        <Prop label="People" last>
+        <Prop label="People">
           <div className="py-0.5">
             <RelationshipPulse pulses={form.pulses} onChange={pulses => set('pulses', pulses)} />
+          </div>
+        </Prop>
+
+        <Prop label="Attachment" last>
+          <div className="py-0.5">
+            <FileAttachment onSummary={s => set('attachment_summary', s)} />
           </div>
         </Prop>
       </div>

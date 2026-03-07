@@ -74,7 +74,7 @@ export default function RelationshipPulse({ pulses, onChange }: Props) {
           value={sentiment}
           onChange={e => setSentiment(e.target.value as Sentiment)}
           aria-label="Sentiment"
-          style={{ ...inputStyle }}
+          style={{ ...inputStyle, paddingRight: '28px' }}
           onFocus={e => { e.target.style.borderColor = 'var(--n-blue)' }}
           onBlur={e => { e.target.style.borderColor = 'var(--n-border)' }}
         >

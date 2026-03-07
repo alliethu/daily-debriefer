@@ -26,6 +26,7 @@ export interface Entry {
   is_quick_win: boolean
   energy_level: number
   whats_unresolved: string
+  attachment_summary?: string
   created_at: string
   updated_at: string
   relationship_pulses?: RelationshipPulse[]
@@ -38,6 +39,7 @@ export interface EntryFormData {
   impact: string
   energy_level: number
   whats_unresolved: string
+  attachment_summary: string
   pulses: { person_name: string; sentiment: Sentiment }[]
   themes: string[]
 }

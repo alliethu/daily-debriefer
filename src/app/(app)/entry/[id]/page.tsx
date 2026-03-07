@@ -26,9 +26,9 @@ export default async function EntryPage({ params }: Props) {
     date: entry.date,
     what_i_did: entry.what_i_did,
     impact: entry.impact,
-    is_quick_win: entry.is_quick_win,
     energy_level: entry.energy_level,
     whats_unresolved: entry.whats_unresolved,
+    attachment_summary: entry.attachment_summary ?? '',
     pulses: (entry.relationship_pulses ?? []).map((p: { person_name: string; sentiment: Sentiment }) => ({
       person_name: p.person_name,
       sentiment: p.sentiment,
