@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import ThemeTags from './ThemeTags'
 import RelationshipPulse from './RelationshipPulse'
 import FileAttachment from './FileAttachment'
-import { type EntryFormData, type Sentiment } from '@/lib/types'
+import RichTextArea, { isRichTextEmpty } from '@/components/shared/RichTextArea'
+import { type EntryFormData } from '@/lib/types'
 
 const energyLabels = ['', 'Drained', 'Low', 'Steady', 'Good', 'Energised']
 
@@ -26,18 +27,6 @@ function Prop({ label, children, last = false }: { label: string; children: Reac
   )
 }
 
-function NTextarea({ value, onChange, placeholder, rows = 4 }: {
-  value: string; onChange: (v: string) => void; placeholder: string; rows?: number
-}) {
-  return (
-    <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows}
-      className="w-full resize-none text-sm leading-relaxed"
-      style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--n-text)' }}
-      onFocus={e => (e.target.style.color = 'var(--n-text)')}
-      placeholder-style={{ color: 'var(--n-text3)' }}
-    />
-  )
-}
 
 export default function EntryForm({ initialData, entryId }: Props) {
   const router = useRouter()
@@ -160,12 +149,12 @@ export default function EntryForm({ initialData, entryId }: Props) {
         ].map(({ label, key, placeholder, rows }) => (
           <div key={key}>
             <label htmlFor={key} className="block text-xs font-medium mb-2" style={{ color: 'var(--n-text3)' }}>{label}</label>
-            <textarea id={key} value={form[key] as string} onChange={e => set(key, e.target.value)}
-              placeholder={placeholder} rows={rows}
-              className="w-full resize-none text-sm leading-relaxed rounded-lg p-3"
-              style={{ background: 'var(--n-active)', border: '1px solid var(--n-border)', outline: 'none', color: 'var(--n-text)' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(26,111,196,0.5)'}
-              onBlur={e => e.target.style.borderColor = 'var(--n-border)'}
+            <RichTextArea
+              id={key}
+              value={form[key] as string}
+              onChange={v => set(key, v)}
+              placeholder={placeholder}
+              minRows={rows}
             />
           </div>
         ))}
@@ -179,10 +168,10 @@ export default function EntryForm({ initialData, entryId }: Props) {
       )}
 
       <div className="flex gap-2 mt-6 pt-6" style={{ borderTop: '1px solid var(--n-border)' }}>
-        <button type="submit" disabled={saving || !form.what_i_did.trim()}
+        <button type="submit" disabled={saving || isRichTextEmpty(form.what_i_did)}
           className="rounded text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: 'var(--n-blue)', color: '#fff', padding: '7px 14px' }}
-          onMouseEnter={e => { if (!saving && form.what_i_did.trim()) (e.currentTarget as HTMLElement).style.background = 'var(--n-blue-h)' }}
+          onMouseEnter={e => { if (!saving && !isRichTextEmpty(form.what_i_did)) (e.currentTarget as HTMLElement).style.background = 'var(--n-blue-h)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--n-blue)' }}
         >
           {saving ? 'Saving…' : entryId ? 'Update entry' : 'Save entry'}

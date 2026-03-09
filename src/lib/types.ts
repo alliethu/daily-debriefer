@@ -58,3 +58,43 @@ export const THEME_OPTIONS = [
 ] as const
 
 export type Theme = typeof THEME_OPTIONS[number]
+
+export type PersonRelationship = 'direct-report' | 'manager' | 'peer' | 'stakeholder' | 'other'
+export type PersonDocumentType = 'self-reflection' | 'manager-reflection' | 'current-level' | 'next-level' | 'other'
+
+export interface Person {
+  id: string
+  user_id: string
+  name: string
+  relationship: PersonRelationship
+  notes: string
+  created_at: string
+  updated_at: string
+  person_documents?: PersonDocument[]
+}
+
+export interface PersonDocument {
+  id: string
+  person_id: string
+  user_id: string
+  type: PersonDocumentType
+  label: string
+  summary: string
+  created_at: string
+}
+
+export const RELATIONSHIP_OPTIONS: { value: PersonRelationship; label: string }[] = [
+  { value: 'direct-report', label: 'Direct report' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'peer', label: 'Peer' },
+  { value: 'stakeholder', label: 'Stakeholder' },
+  { value: 'other', label: 'Other' },
+]
+
+export const DOCUMENT_TYPE_OPTIONS: { value: PersonDocumentType; label: string }[] = [
+  { value: 'self-reflection', label: 'Self-reflection' },
+  { value: 'manager-reflection', label: 'Manager reflection' },
+  { value: 'current-level', label: 'Current level description' },
+  { value: 'next-level', label: 'Next level description' },
+  { value: 'other', label: 'Other' },
+]
