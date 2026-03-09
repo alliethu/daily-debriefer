@@ -2,25 +2,25 @@
 
 import { useState } from 'react'
 import AIOutput from './AIOutput'
+import PersonNameInput from '@/components/shared/PersonNameInput'
 
 export default function PrepOneOnOneForm() {
   const [personName, setPersonName] = useState('')
   const [submitted, setSubmitted] = useState('')
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
     if (personName.trim()) setSubmitted(personName.trim())
   }
 
   return (
     <div className="space-y-3">
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input type="text" value={personName} onChange={e => setPersonName(e.target.value)}
-          placeholder="Person's name…"
-          className="flex-1 min-w-0 rounded text-sm"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--n-border)', padding: '6px 10px', color: 'var(--n-text)', outline: 'none' }}
-          onFocus={e => e.target.style.borderColor = 'var(--n-blue)'}
-          onBlur={e => e.target.style.borderColor = 'var(--n-border)'}
+        <PersonNameInput
+          value={personName}
+          onChange={setPersonName}
+          onSubmit={() => handleSubmit()}
+          placeholder="Person's name..."
         />
         <button type="submit" disabled={!personName.trim()}
           className="rounded text-sm transition-colors disabled:opacity-30"

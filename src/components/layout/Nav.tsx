@@ -8,12 +8,17 @@ const links = [
   { href: '/dashboard', label: 'Journal',  icon: '📋' },
   { href: '/entry/new', label: 'New entry', icon: '✏️' },
   { href: '/insights',  label: 'Insights',  icon: '✨' },
+  { href: '/people',    label: 'People',    icon: '👥' },
 ]
 
-export default function Nav() {
+export default function Nav({ isAdmin: admin }: { isAdmin?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+
+  const allLinks = admin
+    ? [...links, { href: '/admin', label: 'Analytics', icon: '📊' }]
+    : links
 
   async function signOut() {
     await supabase.auth.signOut()
@@ -37,7 +42,7 @@ export default function Nav() {
         </div>
 
         <nav className="flex-1 px-2 space-y-px">
-          {links.map(link => {
+          {allLinks.map(link => {
             const active = link.href === '/entry/new'
               ? pathname === '/entry/new'
               : pathname.startsWith(link.href)
@@ -71,7 +76,7 @@ export default function Nav() {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 flex z-10"
         style={{ background: 'var(--n-sidebar)', borderTop: '1px solid var(--n-border)' }}>
-        {links.map(link => {
+        {allLinks.map(link => {
           const active = link.href === '/entry/new' ? pathname === '/entry/new' : pathname.startsWith(link.href)
           return (
             <Link key={link.href} href={link.href}

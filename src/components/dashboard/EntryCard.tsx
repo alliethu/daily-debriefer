@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { type Entry } from '@/lib/types'
+import { stripHtml } from '@/lib/html'
 
 const sentimentDot: Record<string, string> = {
   positive: '#4caf50',
@@ -49,7 +50,7 @@ export default function EntryCard({ entry }: Props) {
             ))}
           </div>
           <p className="text-sm mt-0.5 line-clamp-1" style={{ color: 'var(--n-text2)' }}>
-            {entry.what_i_did || <span style={{ color: 'var(--n-text3)', fontStyle: 'italic' }}>No content</span>}
+            {stripHtml(entry.what_i_did) || <span style={{ color: 'var(--n-text3)', fontStyle: 'italic' }}>No content</span>}
           </p>
           {(entry.relationship_pulses?.length || 0) > 0 && (
             <div className="flex items-center gap-1.5 mt-1">

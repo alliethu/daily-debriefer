@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+import { stripHtml } from '@/lib/html'
+import { getUserContext } from '@/lib/user-context'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -52,18 +54,20 @@ export async function POST(req: NextRequest) {
     entries = recent.reverse()
   }
 
+  const userContext = await getUserContext(supabase, user.id)
+
   const entriesText = entries.map(e => {
     const pulses = (e.relationship_pulses ?? []).map((p: { person_name: string; sentiment: string }) => `${p.person_name} (${p.sentiment})`).join(', ')
     const themes = (e.entry_themes ?? []).map((t: { theme: string }) => t.theme).join(', ')
     return `
 Date: ${e.date}
-What I did: ${e.what_i_did}
-Impact: ${e.impact}
+What I did: ${stripHtml(e.what_i_did)}
+Impact: ${stripHtml(e.impact)}
 Quick win: ${e.is_quick_win ? 'Yes' : 'No'}
 Energy: ${e.energy_level}/5
 People: ${pulses || 'none'}
 Themes: ${themes || 'none'}
-Unresolved: ${e.whats_unresolved || 'nothing noted'}`.trim()
+Unresolved: ${stripHtml(e.whats_unresolved) || 'nothing noted'}`.trim()
   }).join('\n\n---\n\n')
 
   const stream = anthropic.messages.stream({
@@ -81,7 +85,7 @@ Structure your response with these sections:
 **One thing to carry forward** — a single, direct observation or question
 
 Be direct, specific, and grounded in the entries. Write as if you know this person well. Avoid generic advice.
-
+${userContext ? `\nABOUT THE AUTHOR:\n${userContext}\n` : ''}
 ENTRIES:
 ${entriesText}`,
       },

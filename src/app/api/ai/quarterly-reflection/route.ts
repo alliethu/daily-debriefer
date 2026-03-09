@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+import { stripHtml } from '@/lib/html'
+import { getUserContext } from '@/lib/user-context'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -48,10 +50,26 @@ export async function POST(req: NextRequest) {
   })
 
   const entriesText = entries.slice(-30).map(e =>
-    `${e.date}: ${e.what_i_did.slice(0, 200)} | Impact: ${e.impact.slice(0, 100)} | Unresolved: ${e.whats_unresolved.slice(0, 100)}`
+    `${e.date}: ${stripHtml(e.what_i_did).slice(0, 200)} | Impact: ${stripHtml(e.impact).slice(0, 100)} | Unresolved: ${stripHtml(e.whats_unresolved).slice(0, 100)}`
   ).join('\n')
 
-  const winsText = quickWins.slice(-15).map(e => `${e.date}: ${e.impact || e.what_i_did.slice(0, 150)}`).join('\n')
+  const winsText = quickWins.slice(-15).map(e => `${e.date}: ${stripHtml(e.impact) || stripHtml(e.what_i_did).slice(0, 150)}`).join('\n')
+
+  // Check which people have uploaded documents
+  const { data: peopleWithDocs } = await supabase
+    .from('people')
+    .select('name, person_documents(id)')
+    .eq('user_id', user.id)
+  const docCountMap: Record<string, number> = {}
+  ;(peopleWithDocs ?? []).forEach((p: { name: string; person_documents: { id: string }[] }) => {
+    if (p.person_documents?.length) {
+      docCountMap[p.name] = p.person_documents.length
+    }
+  })
+
+  const peopleText = Object.entries(peopleCount).slice(0, 10).map(([name, s]) =>
+    `- ${name}: ${s.positive} positive, ${s.neutral} neutral, ${s.tense} tense interactions${docCountMap[name] ? ` (has ${docCountMap[name]} context doc${docCountMap[name] !== 1 ? 's' : ''})` : ''}`
+  ).join('\n')
 
   const contextText = `
 PERIOD: ${ninetyDaysAgo.toISOString().split('T')[0]} to ${new Date().toISOString().split('T')[0]}
@@ -63,13 +81,15 @@ TOP THEMES (by frequency):
 ${topThemes.map(([t, c]) => `- ${t}: ${c} times`).join('\n')}
 
 KEY PEOPLE:
-${Object.entries(peopleCount).slice(0, 10).map(([name, s]) => `- ${name}: ${s.positive} positive, ${s.neutral} neutral, ${s.tense} tense interactions`).join('\n')}
+${peopleText}
 
 NOTABLE WINS:
 ${winsText || 'None flagged'}
 
 SAMPLE ENTRIES (most recent 30):
 ${entriesText}`.trim()
+
+  const userContext = await getUserContext(supabase, user.id)
 
   const stream = anthropic.messages.stream({
     model: 'claude-sonnet-4-6',
@@ -89,7 +109,7 @@ Write a narrative reflection with these sections:
 **What this quarter is asking of you** — one honest, forward-looking observation
 
 Write in second person ("you"). Be specific, direct, and honest. Avoid generic leadership advice. Ground everything in the journal data.
-
+${userContext ? `\nABOUT THE AUTHOR:\n${userContext}\n` : ''}
 JOURNAL DATA:
 ${contextText}`,
       },
