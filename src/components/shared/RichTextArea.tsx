@@ -68,8 +68,21 @@ function ToolbarButton({
 export default function RichTextArea({ id, value, onChange, placeholder, minRows = 4 }: Props) {
   const [focused, setFocused] = useState(false)
   const [listening, setListening] = useState(false)
+  const [speechError, setSpeechError] = useState<string | null>(null)
+  const [hasSpeechSupport, setHasSpeechSupport] = useState(false)
   const recognitionRef = useRef<SpeechRecognitionType>(null)
+  const isListeningRef = useRef(false)
+  const retriesRef = useRef(0)
   const hasInitialized = useRef(false)
+
+  const MAX_RETRIES = 3
+
+  // Detect speech support on the client only to avoid hydration mismatch
+  useEffect(() => {
+    setHasSpeechSupport(
+      'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
+    )
+  }, [])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -113,15 +126,20 @@ export default function RichTextArea({ id, value, onChange, placeholder, minRows
     }
   }, [editor, value])
 
-  // Speech recognition
-  const hasSpeechSupport = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+  const stopListening = useCallback(() => {
+    isListeningRef.current = false
+    retriesRef.current = 0
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
+    setListening(false)
+  }, [])
 
   const toggleListening = useCallback(() => {
     if (!editor) return
 
-    if (listening && recognitionRef.current) {
-      recognitionRef.current.stop()
-      setListening(false)
+    if (isListeningRef.current) {
+      stopListening()
       return
     }
 
@@ -129,12 +147,14 @@ export default function RichTextArea({ id, value, onChange, placeholder, minRows
     const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition
     if (!SR) return
 
+    setSpeechError(null)
     const recognition = new SR()
     recognition.continuous = true
     recognition.interimResults = false
     recognition.lang = 'en-US'
 
     recognition.onresult = (event: any) => {
+      retriesRef.current = 0
       let transcript = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -142,28 +162,55 @@ export default function RichTextArea({ id, value, onChange, placeholder, minRows
         }
       }
       if (transcript && editor) {
-        // Insert transcribed text at cursor position
         editor.chain().focus().insertContent(transcript).run()
       }
     }
 
-    recognition.onerror = () => {
-      setListening(false)
+    recognition.onerror = (event: any) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        isListeningRef.current = false
+        retriesRef.current = 0
+        setSpeechError('Microphone access denied. Check browser permissions.')
+        setListening(false)
+      } else if (event.error === 'network') {
+        retriesRef.current++
+      }
     }
 
     recognition.onend = () => {
+      if (isListeningRef.current) {
+        if (retriesRef.current >= MAX_RETRIES) {
+          isListeningRef.current = false
+          retriesRef.current = 0
+          setSpeechError('Speech recognition unavailable. Check your internet connection.')
+          setListening(false)
+          return
+        }
+        try {
+          recognition.start()
+        } catch {
+          isListeningRef.current = false
+          retriesRef.current = 0
+          setListening(false)
+        }
+        return
+      }
       setListening(false)
     }
 
     recognitionRef.current = recognition
+    isListeningRef.current = true
+    retriesRef.current = 0
     recognition.start()
     setListening(true)
     editor.commands.focus('end')
-  }, [editor, listening])
+  }, [editor, stopListening])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isListeningRef.current = false
+      retriesRef.current = 0
       if (recognitionRef.current) {
         recognitionRef.current.stop()
       }
@@ -253,6 +300,18 @@ export default function RichTextArea({ id, value, onChange, placeholder, minRows
           </>
         )}
       </div>
+
+      {/* Speech error */}
+      {speechError && (
+        <div className="flex items-center gap-2 px-3 py-1.5 text-xs"
+          style={{ background: 'rgba(198,40,40,0.06)', color: '#c62828', borderBottom: '1px solid var(--n-border)' }}>
+          <span>{speechError}</span>
+          <button type="button" onClick={() => setSpeechError(null)}
+            style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '0 2px', fontSize: '14px' }}>
+            &times;
+          </button>
+        </div>
+      )}
 
       {/* Editor */}
       <EditorContent editor={editor} />
