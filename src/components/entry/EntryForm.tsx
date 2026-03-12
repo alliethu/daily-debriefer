@@ -92,7 +92,11 @@ export default function EntryForm({ initialData, entryId }: Props) {
       )
     }
 
-    router.push('/dashboard')
+    if (entryId) {
+      router.push('/dashboard')
+    } else {
+      router.push(`/entry/${entry_id}?new=1`)
+    }
     router.refresh()
   }
 

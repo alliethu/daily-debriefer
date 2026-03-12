@@ -4,14 +4,18 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import EntryForm from '@/components/entry/EntryForm'
+import DailyInsight from '@/components/insights/DailyInsight'
 import { type Sentiment } from '@/lib/types'
 
 interface Props {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ new?: string }>
 }
 
-export default async function EntryPage({ params }: Props) {
+export default async function EntryPage({ params, searchParams }: Props) {
   const { id } = await params
+  const sp = await searchParams
+  const isNew = sp.new === '1'
   const supabase = await createClient()
 
   const { data: entry, error } = await supabase
@@ -48,6 +52,7 @@ export default async function EntryPage({ params }: Props) {
         </Link>
       </div>
       <EntryForm initialData={initialData} entryId={id} />
+      <DailyInsight entryId={id} autoTrigger={isNew} />
     </div>
   )
 }
